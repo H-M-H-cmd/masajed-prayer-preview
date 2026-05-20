@@ -1,0 +1,117 @@
+import {
+  Heart,
+  DollarSign,
+  Calendar,
+  HandHelping,
+  Users,
+  Star,
+  FileText,
+  Building2,
+  Image,
+  FileSpreadsheet,
+  MonitorSmartphone,
+  Camera,
+  Brain,
+  Box,
+  ClipboardList,
+} from "lucide-react";
+import { MosqueMenuItem } from "@/types/mosque-member";
+
+export const MOSQUE_MENU_ITEMS: MosqueMenuItem[] = [
+  {
+    id: "needs",
+    icon: Heart,
+    translationKey: "mosques.sideMenu.needs",
+    is_active: true,
+  },
+  {
+    id: "donations",
+    icon: DollarSign,
+    translationKey: "mosques.sideMenu.donations",
+    is_active: true,
+  },
+  {
+    id: "events",
+    icon: Calendar,
+    translationKey: "mosques.sideMenu.events",
+    is_active: true,
+  },
+  {
+    id: "volunteers",
+    icon: HandHelping,
+    translationKey: "mosques.sideMenu.volunteerOpportunities",
+    is_active: true,
+  },
+  {
+    id: "community",
+    icon: Users,
+    translationKey: "mosques.sideMenu.community",
+    is_active: true,
+  },
+  {
+    id: "ratings",
+    icon: Star,
+    translationKey: "mosques.sideMenu.ratings",
+    is_active: true,
+  },
+  {
+    id: "basic-info",
+    icon: FileText,
+    translationKey: "mosques.sideMenu.basicInfo",
+    is_active: true,
+  },
+  {
+    id: "facilities",
+    icon: Building2,
+    translationKey: "mosques.sideMenu.facilitiesServices",
+    is_active: true,
+  },
+  {
+    id: "images",
+    icon: Image,
+    translationKey: "mosques.sideMenu.images",
+    is_active: true,
+  },
+  {
+    id: "blueprint",
+    icon: FileSpreadsheet,
+    translationKey: "mosques.sideMenu.blueprint",
+    is_active: false,
+  },
+  {
+    id: "remote-control",
+    icon: MonitorSmartphone,
+    translationKey: "mosques.sideMenu.remoteControl",
+    is_active: true,
+  },
+  {
+    id: "surveillance",
+    icon: Camera,
+    translationKey: "mosques.sideMenu.surveillance",
+    is_active: false,
+  },
+  {
+    id: "smart-khateeb",
+    icon: Brain,
+    translationKey: "mosques.sideMenu.smartKhateeb",
+    is_active: true,
+  },
+  {
+    id: "assets",
+    icon: Box,
+    translationKey: "mosques.sideMenu.assets",
+    is_active: false,
+  },
+  {
+    id: "operations",
+    icon: ClipboardList,
+    translationKey: "mosques.sideMenu.operationsLog",
+    is_active: false,
+  },
+  {
+    id: "cctv",
+    icon: Camera,
+    translationKey: "mosques.sideMenu.cctv",
+    is_active: true,
+  },
+]; 

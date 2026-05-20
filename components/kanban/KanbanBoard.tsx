@@ -1,0 +1,205 @@
+"use client";
+import { KanbanBoardContext } from "@/contexts/KanbanBoardContext";
+import { useContext, useMemo, useState } from "react";
+import ColumnWrapper from "./ColumnWrapper";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  TouchSensor,
+  UniqueIdentifier,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { Column, Task } from "@/types/kanban";
+import { TaskCard } from "./TaskCard";
+import { SortableContext, arrayMove } from "@dnd-kit/sortable";
+
+export default function KanbanBoard() {
+  const { columns, addColumn, setColumns, activeBoard } =
+    useContext(KanbanBoardContext);
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [acitveCol, setActiveCol] = useState<Column | null>(null);
+  const draggableTypes = useMemo(() => ["column", "task"], []);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 250, distance: 5 },
+    })
+  );
+
+  const findColumnIdx = (id: UniqueIdentifier | undefined, type: string) => {
+    if (type === "column") {
+      return columns.findIndex((item) => item.id === id);
+    }
+    if (type === "task") {
+      return columns.findIndex((column) =>
+        column.tasks.some((item: Task) => item.id === id)
+      );
+    }
+  };
+
+  function checkValidIdx(idx: number | undefined): idx is number {
+    return idx !== undefined && idx !== -1;
+  }
+
+  const onDragStart = (event: DragStartEvent) => {
+    const data = event.active.data.current;
+    if (!data || !draggableTypes.includes(data.type)) return;
+    const activeType = data.type;
+    if (activeType === "task") {
+      const { task } = data;
+      setActiveTask(task);
+    }
+    if (activeType === "column") {
+      const { column } = data;
+      setActiveCol(column);
+    }
+  };
+
+  const onDragEnd = (event: DragEndEvent) => {
+    setActiveTask(null);
+    setActiveCol(null);
+
+    const { active, over } = event;
+    if (!active || !over) return;
+    if (active.id === over.id) return;
+
+    const activeType = active.data.current?.type;
+    const overType = over.data.current?.type;
+
+    if (activeType === "column" && overType === "column") {
+      const activeColumnIdx = findColumnIdx(active.id, activeType);
+      const overColumnIdx = findColumnIdx(over.id, overType);
+
+      if (!checkValidIdx(activeColumnIdx) || !checkValidIdx(overColumnIdx))
+        return;
+
+      let newColumns = [...columns];
+      newColumns = arrayMove(newColumns, activeColumnIdx, overColumnIdx);
+      setColumns(newColumns);
+    }
+  };
+
+  const onDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!active || !over) return;
+    if (active.id === over.id) return;
+
+    const activeType = active.data.current?.type;
+    const overType = over.data.current?.type;
+
+    if (activeType === "task" && overType === "task") {
+      const activeColumnIdx = findColumnIdx(active.id, activeType);
+      const overColumnIdx = findColumnIdx(over.id, overType);
+
+      if (!checkValidIdx(activeColumnIdx) || !checkValidIdx(overColumnIdx))
+        return;
+
+      const activeColumn = columns[activeColumnIdx];
+      const overColumn = columns[overColumnIdx];
+
+      const activeItemIdx = activeColumn.tasks.findIndex(
+        (item: Task) => item.id === active.id
+      );
+
+      const overItemIdx = overColumn.tasks.findIndex(
+        (item: Task) => item.id === over.id
+      );
+
+      if (activeColumnIdx === overColumnIdx) {
+        const newColumns = [...columns];
+        newColumns[activeColumnIdx].tasks = arrayMove(
+          newColumns[activeColumnIdx].tasks,
+          activeItemIdx,
+          overItemIdx
+        );
+        setColumns(newColumns);
+      } else {
+        // In different columns
+        const newColumns = [...columns];
+        const [removedItem] = newColumns[activeColumnIdx].tasks.splice(
+          activeItemIdx,
+          1
+        );
+        newColumns[overColumnIdx].tasks.splice(overItemIdx, 0, removedItem);
+        setColumns(newColumns);
+      }
+    }
+
+    if (activeType === "task" && overType === "column") {
+      const activeColumnIdx = findColumnIdx(active.id, activeType);
+      const overColumnIdx = findColumnIdx(over.id, overType);
+
+      if (!checkValidIdx(activeColumnIdx) || !checkValidIdx(overColumnIdx))
+        return;
+
+      const activeColumn = columns[activeColumnIdx];
+      const overColumn = columns[overColumnIdx];
+
+      const activeItemIdx = activeColumn.tasks.findIndex(
+        (item: Task) => item.id === active.id
+      );
+
+      const overItemIdx = overColumn.tasks.length;
+
+      const newColumns = [...columns];
+      const [removedItem] = newColumns[activeColumnIdx].tasks.splice(
+        activeItemIdx,
+        1
+      );
+      newColumns[overColumnIdx].tasks.splice(overItemIdx, 0, removedItem);
+      setColumns(newColumns);
+    }
+  };
+
+  return (
+    <div className="px-[30px] sm:px-[40px] py-10 flex flex-col gap-y-6">
+      <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+        {activeBoard ? activeBoard.title : "Kanban Board"}
+      </h1>
+      <h2 className="text-xl text-gray-500">
+        {activeBoard ? activeBoard.description : "No description"}
+      </h2>
+      <div className="w-full overflow-x-auto pb-5">
+        <DndContext
+          id="kanban-board"
+          sensors={sensors}
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+          onDragOver={onDragOver}
+        >
+          <div className="flex gap-4 min-w-fit">
+            <div className="flex gap-4">
+              <SortableContext items={columns.map((c) => c.id)}>
+                {columns.map((column) => {
+                  return <ColumnWrapper key={column.id} column={column} />;
+                })}
+              </SortableContext>
+            </div>
+            <Button
+              className="h-[60px] w-[300px] sm:w-[350px] cursor-pointer rounded-lg
+              text-md font-bold p-4 flex gap-2"
+              onClick={() => {
+                addColumn();
+              }}
+            >
+              <PlusCircle className="h-6 w-6" />
+              Add Column
+            </Button>
+          </div>
+          <DragOverlay>
+            {activeTask && <TaskCard task={activeTask} columnId="" />}
+            {acitveCol && <ColumnWrapper column={acitveCol} />}
+          </DragOverlay>
+        </DndContext>
+      </div>
+    </div>
+  );
+}

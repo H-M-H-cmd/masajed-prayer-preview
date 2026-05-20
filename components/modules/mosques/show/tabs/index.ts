@@ -1,0 +1,12 @@
+export { EventsTab } from "./events";
+export { NeedsTab } from "./needs";
+export { DonationsTab } from "./donations";
+export { VolunteersTab } from "./volunteers";
+export { CommunityTab } from "./community";
+export { RatingsTab } from "./ratings";
+export { RemoteControlTab } from "./remote-control";
+export { CCTVTab } from "./cctv";
+export { SmartKhateebTab } from "./smart-khateeb";
+export { BasicInfoTab } from "./basic-info";
+export { FacilitiesTab } from "./facilities";
+export { ImagesTab } from "./images";
